@@ -127,6 +127,30 @@ resource "aws_lambda_permission" "apigw_lambda" {
   source_arn    = "${aws_api_gateway_rest_api.chatbot_api.execution_arn}/*/*"
 }
 
+#################### API Gateway CloudWatch Role ####################
+resource "aws_iam_role" "api_gateway_cloudwatch" {
+  name = "api_gateway_cloudwatch_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "apigateway.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "api_gateway_cloudwatch" {
+  role       = aws_iam_role.api_gateway_cloudwatch.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+}
+
+resource "aws_api_gateway_account" "main" {
+  cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch.arn
+}
+
 #################### CloudWatch Log Group ####################
 resource "aws_cloudwatch_log_group" "api_gateway_logs" {
   name              = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.chatbot_api.id}/prod"
@@ -180,6 +204,8 @@ resource "aws_api_gateway_stage" "chatbot_stage" {
       integrationError = "$context.integration.error"
     })
   }
+
+  depends_on = [aws_api_gateway_account.main]
 }
 
 resource "aws_api_gateway_method_settings" "chatbot_settings" {
