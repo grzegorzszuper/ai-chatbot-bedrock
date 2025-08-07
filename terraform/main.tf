@@ -45,6 +45,8 @@ resource "aws_lambda_function" "chatbot_lambda" {
   handler          = "handler.lambda_handler"
   runtime          = "python3.12"
   source_code_hash = filebase64sha256("lambda.zip")
+  timeout          = 30
+  memory_size      = 256
 }
 
 #################### API Gateway ####################
