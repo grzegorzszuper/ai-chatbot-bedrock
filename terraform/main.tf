@@ -128,5 +128,6 @@ resource "aws_api_gateway_stage" "chatbot_stage" {
 
 
 output "api_url" {
-  value = "${aws_api_gateway_deployment.chatbot_deployment.invoke_url}/chat"
+  value = "https://${aws_api_gateway_rest_api.chatbot_api.id}.execute-api.${var.aws_region}.amazonaws.com/${aws_api_gateway_stage.chatbot_stage.stage_name}/chat"
 }
+
