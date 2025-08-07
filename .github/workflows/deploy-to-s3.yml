@@ -1,13 +1,15 @@
 name: Deploy static site to S3
 
+# uruchamiaj przy pushu do main i manualnie
 on:
   push:
     branches:
-      - main
+      - main            # jeśli Twoja główna gałąź to 'master', zamień na master
     paths:
-      - 'index.html'
-      - 'script.js'
-      - 'assets/**'
+      - 'frontend/index.html'
+      - 'frontend/script.js'
+      - 'frontend/assets/**'  # jeśli masz katalog assets
+  workflow_dispatch: {}
 
 jobs:
   deploy:
@@ -26,7 +28,6 @@ jobs:
 
       - name: Sync to S3 bucket
         run: |
-          aws s3 sync . s3://${{ secrets.S3_BUCKET }} \
+          aws s3 sync frontend/ s3://${{ secrets.S3_BUCKET }} \
             --exclude ".git/*" \
-            --exclude ".github/*" \
             --delete
