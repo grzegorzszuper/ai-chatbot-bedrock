@@ -99,7 +99,7 @@ body {
   background: var(--primary);
   border: none;
   color: #fff;
-  padding: 15px 28px; /* zwiększone paddingi */
+  padding: 13px 28px; /* zwiększone paddingi */
   font-size: 1.1rem;  /* większy tekst */
   border-radius: 8px;
   cursor: pointer;
