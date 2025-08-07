@@ -63,7 +63,7 @@ resource "aws_api_gateway_resource" "chatbot_resource" {
   path_part   = "chat"
 }
 
-# POST
+# POST method
 resource "aws_api_gateway_method" "chatbot_post" {
   rest_api_id   = aws_api_gateway_rest_api.chatbot_api.id
   resource_id   = aws_api_gateway_resource.chatbot_resource.id
@@ -80,7 +80,38 @@ resource "aws_api_gateway_integration" "chatbot_integration" {
   uri                     = aws_lambda_function.chatbot_lambda.invoke_arn
 }
 
-# OPTIONS (CORS)
+resource "aws_api_gateway_method_response" "chatbot_post_response" {
+  rest_api_id = aws_api_gateway_rest_api.chatbot_api.id
+  resource_id = aws_api_gateway_resource.chatbot_resource.id
+  http_method = aws_api_gateway_method.chatbot_post.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "chatbot_post_integration_response" {
+  depends_on  = [aws_api_gateway_integration.chatbot_integration]
+  rest_api_id = aws_api_gateway_rest_api.chatbot_api.id
+  resource_id = aws_api_gateway_resource.chatbot_resource.id
+  http_method = aws_api_gateway_method.chatbot_post.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'",
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+}
+
+# OPTIONS method (CORS preflight)
 resource "aws_api_gateway_method" "chatbot_options" {
   rest_api_id   = aws_api_gateway_rest_api.chatbot_api.id
   resource_id   = aws_api_gateway_resource.chatbot_resource.id
@@ -135,6 +166,7 @@ resource "aws_api_gateway_integration_response" "chatbot_options_integration_res
   }
 }
 
+# Lambda permission
 resource "aws_lambda_permission" "allow_api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
@@ -143,10 +175,13 @@ resource "aws_lambda_permission" "allow_api_gateway" {
   source_arn    = "${aws_api_gateway_rest_api.chatbot_api.execution_arn}/*/*"
 }
 
+# Deployment
 resource "aws_api_gateway_deployment" "chatbot_deployment" {
   depends_on = [
     aws_api_gateway_integration.chatbot_integration,
     aws_api_gateway_integration.chatbot_options_integration,
+    aws_api_gateway_integration_response.chatbot_post_integration_response,
+    aws_api_gateway_method_response.chatbot_post_response,
     aws_api_gateway_integration_response.chatbot_options_integration_response,
     aws_api_gateway_method_response.chatbot_options_response
   ]
