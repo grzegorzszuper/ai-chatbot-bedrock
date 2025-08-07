@@ -5,10 +5,10 @@ provider "aws" {
 resource "aws_iam_role" "lambda_exec" {
   name = "lambda_exec_role"
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
       Principal = {
         Service = "lambda.amazonaws.com"
       }
@@ -40,7 +40,6 @@ resource "aws_api_gateway_resource" "chatbot_resource" {
   path_part   = "chat"
 }
 
-# POST method
 resource "aws_api_gateway_method" "chatbot_post" {
   rest_api_id   = aws_api_gateway_rest_api.chatbot_api.id
   resource_id   = aws_api_gateway_resource.chatbot_resource.id
@@ -57,7 +56,6 @@ resource "aws_api_gateway_integration" "chatbot_post_integration" {
   uri                     = aws_lambda_function.chatbot_lambda.invoke_arn
 }
 
-# OPTIONS method for CORS
 resource "aws_api_gateway_method" "chatbot_options" {
   rest_api_id   = aws_api_gateway_rest_api.chatbot_api.id
   resource_id   = aws_api_gateway_resource.chatbot_resource.id
@@ -82,8 +80,8 @@ resource "aws_api_gateway_method_response" "chatbot_options_response" {
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true
-    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
     "method.response.header.Access-Control-Allow-Origin"  = true
   }
 }
@@ -95,8 +93,8 @@ resource "aws_api_gateway_integration_response" "chatbot_options_integration_res
   status_code = aws_api_gateway_method_response.chatbot_options_response.status_code
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type'"
-    "method.response.header.Access-Control-Allow-Methods" = "'OPTIONS,POST'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type'",
+    "method.response.header.Access-Control-Allow-Methods" = "'OPTIONS,POST'",
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 }
@@ -110,14 +108,21 @@ resource "aws_lambda_permission" "apigw_lambda" {
 }
 
 resource "aws_api_gateway_deployment" "chatbot_deployment" {
+  rest_api_id = aws_api_gateway_rest_api.chatbot_api.id
+
+  triggers = {
+    redeployment = sha1(jsonencode({
+      post_integration = aws_api_gateway_integration.chatbot_post_integration.id,
+      options_integration = aws_api_gateway_integration.chatbot_options_integration.id
+    }))
+  }
+
   depends_on = [
     aws_api_gateway_integration.chatbot_post_integration,
     aws_api_gateway_integration.chatbot_options_integration,
     aws_api_gateway_method.chatbot_post,
     aws_api_gateway_method.chatbot_options
   ]
-
-  rest_api_id = aws_api_gateway_rest_api.chatbot_api.id
 }
 
 resource "aws_api_gateway_stage" "chatbot_stage" {
@@ -126,8 +131,6 @@ resource "aws_api_gateway_stage" "chatbot_stage" {
   stage_name    = "prod"
 }
 
-
 output "api_url" {
   value = "https://${aws_api_gateway_rest_api.chatbot_api.id}.execute-api.eu-west-3.amazonaws.com/${aws_api_gateway_stage.chatbot_stage.stage_name}/chat"
 }
-
