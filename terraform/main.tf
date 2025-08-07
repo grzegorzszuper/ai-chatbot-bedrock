@@ -43,13 +43,21 @@ resource "aws_iam_role_policy" "bedrock_invoke_policy" {
 }
 
 resource "aws_lambda_function" "chatbot_lambda" {
-  function_name    = "ai-chatbot-lambda"
-  role             = aws_iam_role.lambda_bedrock_role.arn
-  handler          = "handler.lambda_handler"
-  runtime          = "python3.12"
-  filename         = "lambda.zip"
-  timeout          = 30
+  function_name = "ai-chatbot-lambda"
+  role          = aws_iam_role.lambda_bedrock_role.arn
+  handler       = "handler.lambda_handler"
+  runtime       = "python3.12"
+  filename      = "lambda.zip"
+  timeout       = 30
   source_code_hash = filebase64sha256("lambda.zip")
+}
+
+resource "aws_lambda_permission" "allow_api_gateway" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.chatbot_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.chatbot_api.execution_arn}/*/*"
 }
 
 resource "aws_api_gateway_rest_api" "chatbot_api" {
@@ -80,7 +88,38 @@ resource "aws_api_gateway_integration" "chatbot_integration" {
   uri                     = aws_lambda_function.chatbot_lambda.invoke_arn
 }
 
-# OPTIONS (CORS)
+resource "aws_api_gateway_method_response" "chatbot_post_response" {
+  rest_api_id = aws_api_gateway_rest_api.chatbot_api.id
+  resource_id = aws_api_gateway_resource.chatbot_resource.id
+  http_method = aws_api_gateway_method.chatbot_post.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "chatbot_post_integration_response" {
+  depends_on  = [aws_api_gateway_integration.chatbot_integration]
+  rest_api_id = aws_api_gateway_rest_api.chatbot_api.id
+  resource_id = aws_api_gateway_resource.chatbot_resource.id
+  http_method = aws_api_gateway_method.chatbot_post.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  response_templates = {
+    "application/json" = ""
+  }
+}
+
+# OPTIONS method (CORS preflight)
 resource "aws_api_gateway_method" "chatbot_options" {
   rest_api_id   = aws_api_gateway_rest_api.chatbot_api.id
   resource_id   = aws_api_gateway_resource.chatbot_resource.id
@@ -126,7 +165,7 @@ resource "aws_api_gateway_integration_response" "chatbot_options_integration_res
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'",
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'",
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
@@ -135,24 +174,18 @@ resource "aws_api_gateway_integration_response" "chatbot_options_integration_res
   }
 }
 
-resource "aws_lambda_permission" "allow_api_gateway" {
-  statement_id  = "AllowAPIGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.chatbot_lambda.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.chatbot_api.execution_arn}/*/*"
-}
-
 resource "aws_api_gateway_deployment" "chatbot_deployment" {
   depends_on = [
     aws_api_gateway_integration.chatbot_integration,
     aws_api_gateway_integration.chatbot_options_integration,
     aws_api_gateway_integration_response.chatbot_options_integration_response,
-    aws_api_gateway_method_response.chatbot_options_response
+    aws_api_gateway_method_response.chatbot_options_response,
+    aws_api_gateway_method.chatbot_post,
+    aws_api_gateway_method_response.chatbot_post_response
   ]
+
   rest_api_id = aws_api_gateway_rest_api.chatbot_api.id
 
-  # wymusza nowy deployment
   triggers = {
     redeploy = timestamp()
   }
@@ -166,6 +199,12 @@ resource "aws_api_gateway_stage" "chatbot_stage" {
   deployment_id = aws_api_gateway_deployment.chatbot_deployment.id
   rest_api_id   = aws_api_gateway_rest_api.chatbot_api.id
   stage_name    = "prod"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  depends_on = [aws_api_gateway_deployment.chatbot_deployment]
 }
 
 output "chatbot_api_url" {
