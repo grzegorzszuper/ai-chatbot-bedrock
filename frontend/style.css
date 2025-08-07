@@ -1,0 +1,87 @@
+\--- File: frontend/style.css ---
+
+```css
+/* style.css */
+body {
+  background: #f9f9f9;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+  margin: 0;
+}
+
+.container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 90%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+textarea#message {
+  resize: vertical;
+  min-height: 80px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+button {
+  background-color: #007acc;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #005fa3;
+}
+
+#response {
+  margin-top: 20px;
+  white-space: pre-wrap;
+  background: #eef5ff;
+  border: 1px solid #cde4ff;
+  border-radius: 4px;
+  padding: 15px;
+  min-height: 100px;
+}
+```
+
+\--- File: frontend/index.html ---
+
+```html
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Chatbot</title>
+  <!-- Link to external stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Chatbot z Claude 3</h1>
+    <textarea id="message" placeholder="Zadaj pytanie..."></textarea>
+    <button onclick="sendMessage()">Wyślij</button>
+    <div id="response"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
+```
+
