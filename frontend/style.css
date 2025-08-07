@@ -51,27 +51,35 @@ body {
   padding: 16px;
   overflow-y: auto;
   background: var(--bg);
+  height: 400px;
+  display: flex;
+  flex-direction: column;
 }
 
-.message {
+.user-message, .bot-message {
   max-width: 80%;
   margin-bottom: 12px;
   padding: 12px;
   border-radius: 12px;
   line-height: 1.4;
+  word-wrap: break-word;
 }
 
-.message.user {
-  background: var(--outgoing);
+.user-message {
+  background: var(--primary);
+  color: white;
   align-self: flex-end;
   border-bottom-right-radius: 4px;
 }
 
-.message.bot {
+.bot-message {
   background: var(--incoming);
+  color: var(--text);
   align-self: flex-start;
   border-bottom-left-radius: 4px;
 }
+
+
 
 .chat-footer {
   padding: 12px;

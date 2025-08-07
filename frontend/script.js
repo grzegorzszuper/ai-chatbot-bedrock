@@ -1,10 +1,25 @@
 const API_URL = "https://r7l91vquc8.execute-api.eu-west-3.amazonaws.com/prod/chat";
 
-async function sendMessage() {
-  const message = document.getElementById("message").value;
-  const responseDiv = document.getElementById("response");
-  responseDiv.innerText = "Czekam na odpowiedź...";
+function addMessage(content, isUser = false) {
+  const chatBody = document.getElementById("chatBody");
+  const messageDiv = document.createElement("div");
+  messageDiv.className = isUser ? "user-message" : "bot-message";
+  messageDiv.textContent = content;
+  chatBody.appendChild(messageDiv);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
 
+async function sendMessage() {
+  const messageInput = document.getElementById("message");
+  const message = messageInput.value.trim();
+  
+  if (!message) return;
+  
+  addMessage(message, true);
+  messageInput.value = "";
+  
+  addMessage("Czekam na odpowiedź...", false);
+  
   try {
     const res = await fetch(API_URL, {
       method: "POST",
@@ -14,13 +29,30 @@ async function sendMessage() {
     });
 
     const data = await res.json();
+    
+    // Usuń "Czekam na odpowiedź..."
+    const chatBody = document.getElementById("chatBody");
+    chatBody.removeChild(chatBody.lastChild);
+    
     if (data.response) {
-      responseDiv.innerText = data.response;
+      addMessage(data.response, false);
     } else {
-      responseDiv.innerText = "Błąd: " + JSON.stringify(data);
+      addMessage("Błąd: " + JSON.stringify(data), false);
     }
 
   } catch (err) {
-    responseDiv.innerText = "Błąd połączenia: " + err.message;
+    const chatBody = document.getElementById("chatBody");
+    chatBody.removeChild(chatBody.lastChild);
+    addMessage("Błąd połączenia: " + err.message, false);
   }
 }
+
+// Event listeners
+document.getElementById("sendBtn").addEventListener("click", sendMessage);
+
+document.getElementById("message").addEventListener("keypress", function(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
