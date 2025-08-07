@@ -33,8 +33,8 @@ resource "aws_lambda_function" "chatbot_lambda" {
   filename         = "lambda.zip"
   function_name    = "chatbotHandler"
   role             = aws_iam_role.lambda_exec.arn
-  handler          = "index.handler"
-  runtime          = "nodejs18.x"
+  handler          = "handler.lambda_handler"
+  runtime          = "python3.12"
   source_code_hash = filebase64sha256("lambda.zip")
 }
 
