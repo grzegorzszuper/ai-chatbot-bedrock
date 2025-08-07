@@ -177,16 +177,18 @@ resource "aws_lambda_permission" "allow_api_gateway" {
 resource "aws_api_gateway_deployment" "chatbot_deployment" {
   depends_on = [
     aws_api_gateway_integration.chatbot_integration,
-    aws_api_gateway_method.chatbot_post,
-    aws_api_gateway_method.chatbot_options,
-    aws_api_gateway_method_response.chatbot_post_response,
-    aws_api_gateway_method_response.chatbot_options_response,
-    aws_api_gateway_integration_response.chatbot_post_integration_response,
-    aws_api_gateway_integration_response.chatbot_options_integration_response
+    aws_api_gateway_integration.chatbot_options_integration,
+    aws_api_gateway_integration_response.chatbot_options_integration_response,
+    aws_api_gateway_method_response.chatbot_options_response
   ]
 
   rest_api_id = aws_api_gateway_rest_api.chatbot_api.id
+
+  triggers = {
+    redeploy = timestamp()
+  }
 }
+
 
 resource "aws_api_gateway_stage" "chatbot_stage" {
   deployment_id = aws_api_gateway_deployment.chatbot_deployment.id

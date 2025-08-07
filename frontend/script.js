@@ -8,18 +8,22 @@ async function sendMessage() {
   try {
     const res = await fetch(API_URL, {
       method: "POST",
-      mode: "cors",  // 👈 DODANE!
+      mode: "cors",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ message })
     });
 
+    if (!res.ok) {
+      throw new Error(`Błąd HTTP: ${res.status}`);
+    }
+
     const data = await res.json();
     if (data.response) {
       responseDiv.innerText = data.response;
     } else {
-      responseDiv.innerText = "Błąd: " + JSON.stringify(data);
+      responseDiv.innerText = "Błąd odpowiedzi: " + JSON.stringify(data);
     }
 
   } catch (err) {
