@@ -9,21 +9,15 @@ async function sendMessage() {
     const res = await fetch(API_URL, {
       method: "POST",
       mode: "cors",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message })
     });
-
-    if (!res.ok) {
-      throw new Error(`Błąd HTTP: ${res.status}`);
-    }
 
     const data = await res.json();
     if (data.response) {
       responseDiv.innerText = data.response;
     } else {
-      responseDiv.innerText = "Błąd odpowiedzi: " + JSON.stringify(data);
+      responseDiv.innerText = "Błąd: " + JSON.stringify(data);
     }
 
   } catch (err) {
