@@ -1,5 +1,11 @@
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "eu-west-3"
+}
+
 provider "aws" {
-  region = "eu-west-3"
+  region = var.aws_region
 }
 
 #################### IAM Role ####################
@@ -76,6 +82,8 @@ resource "aws_api_gateway_integration" "chatbot_options_integration" {
   request_templates = {
     "application/json" = "{\"statusCode\": 200}"
   }
+  
+  depends_on = [aws_api_gateway_method.chatbot_options]
 }
 
 resource "aws_api_gateway_method_response" "chatbot_options_response" {
@@ -89,6 +97,8 @@ resource "aws_api_gateway_method_response" "chatbot_options_response" {
     "method.response.header.Access-Control-Allow-Methods" = true
     "method.response.header.Access-Control-Allow-Origin"  = true
   }
+  
+  depends_on = [aws_api_gateway_method.chatbot_options]
 }
 
 resource "aws_api_gateway_integration_response" "chatbot_options_integration_response" {
@@ -98,10 +108,15 @@ resource "aws_api_gateway_integration_response" "chatbot_options_integration_res
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'OPTIONS,POST'"
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
+  
+  depends_on = [
+    aws_api_gateway_method_response.chatbot_options_response,
+    aws_api_gateway_integration.chatbot_options_integration
+  ]
 }
 
 #################### Lambda Permission ####################
@@ -118,19 +133,23 @@ resource "aws_api_gateway_deployment" "chatbot_deployment" {
   rest_api_id = aws_api_gateway_rest_api.chatbot_api.id
 
   depends_on = [
-    aws_api_gateway_method.chatbot_post,
     aws_api_gateway_integration.chatbot_post_integration,
-    aws_api_gateway_method.chatbot_options,
-    aws_api_gateway_integration.chatbot_options_integration
+    aws_api_gateway_integration_response.chatbot_options_integration_response
   ]
 
   triggers = {
-    redeployment = sha1(join(",", [
+    redeployment = sha1(jsonencode([
       aws_api_gateway_method.chatbot_post.id,
       aws_api_gateway_integration.chatbot_post_integration.id,
       aws_api_gateway_method.chatbot_options.id,
-      aws_api_gateway_integration.chatbot_options_integration.id
+      aws_api_gateway_integration.chatbot_options_integration.id,
+      aws_api_gateway_method_response.chatbot_options_response.id,
+      aws_api_gateway_integration_response.chatbot_options_integration_response.id
     ]))
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -142,6 +161,7 @@ resource "aws_api_gateway_stage" "chatbot_stage" {
 
 #################### Output ####################
 output "api_url" {
-  value = "https://${aws_api_gateway_rest_api.chatbot_api.id}.execute-api.eu-west-3.amazonaws.com/${aws_api_gateway_stage.chatbot_stage.stage_name}/chat"
+  description = "API Gateway endpoint URL"
+  value       = "https://${aws_api_gateway_rest_api.chatbot_api.id}.execute-api.${var.aws_region}.amazonaws.com/${aws_api_gateway_stage.chatbot_stage.stage_name}/chat"
 }
 
