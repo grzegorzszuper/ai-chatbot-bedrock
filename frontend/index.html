@@ -3,18 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Chatbot</title>
-  <!-- Zewnętrzny plik CSS -->
+  <title>AI Chatbot Bedrock</title>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Chatbot z Claude 3</h1>
-    <textarea id="message" rows="3" placeholder="Zadaj pytanie..."></textarea>
-    <button onclick="sendMessage()">Wyślij !!!</button>
-    <div id="response"></div>
+  <div class="chat-wrapper">
+    <header class="chat-header">
+      📣 Chatbot z Claude 3 (Bedrock)
+    </header>
+    <div id="chatBody" class="chat-body">
+      <!-- wiadomości będą tutaj -->
+    </div>
+    <footer class="chat-footer">
+      <textarea id="message" rows="2" placeholder="Napisz wiadomość..."></textarea>
+      <button id="sendBtn">Wyślij</button>
+    </footer>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>
