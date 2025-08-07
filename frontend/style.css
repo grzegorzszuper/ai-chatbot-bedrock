@@ -79,8 +79,6 @@ body {
   border-bottom-left-radius: 4px;
 }
 
-
-
 .chat-footer {
   padding: 12px;
   background: var(--card);
@@ -101,7 +99,8 @@ body {
   background: var(--primary);
   border: none;
   color: #fff;
-  padding: 0 16px;
+  padding: 14px 28px; /* zwiększone paddingi */
+  font-size: 1.1rem;  /* większy tekst */
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
