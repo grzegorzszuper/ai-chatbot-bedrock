@@ -8,6 +8,7 @@ async function sendMessage() {
   try {
     const res = await fetch(API_URL, {
       method: "POST",
+      mode: "cors",  // 👈 DODANE!
       headers: {
         "Content-Type": "application/json"
       },
