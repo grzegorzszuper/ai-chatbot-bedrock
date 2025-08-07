@@ -11,6 +11,11 @@ def lambda_handler(event, context):
         if not user_message:
             return {
                 "statusCode": 400,
+                "headers": {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Headers": "Content-Type",
+                    "Access-Control-Allow-Methods": "OPTIONS,POST"
+                },
                 "body": json.dumps({"error": "No message provided."})
             }
 
@@ -34,11 +39,21 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Methods": "OPTIONS,POST"
+            },
             "body": json.dumps({"response": response_body["content"][0]["text"]})
         }
 
     except Exception as e:
         return {
             "statusCode": 500,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Methods": "OPTIONS,POST"
+            },
             "body": json.dumps({"error": str(e)})
         }
