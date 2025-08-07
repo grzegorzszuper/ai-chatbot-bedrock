@@ -106,19 +106,39 @@ resource "aws_api_gateway_integration" "chatbot_options_integration" {
 EOF
   }
 
-  integration_response {
-    status_code = "200"
+  resource "aws_api_gateway_integration" "chatbot_options_integration" {
+  rest_api_id          = aws_api_gateway_rest_api.chatbot_api.id
+  resource_id          = aws_api_gateway_resource.chatbot_resource.id
+  http_method          = aws_api_gateway_method.chatbot_options.http_method
+  type                 = "MOCK"
+  passthrough_behavior = "WHEN_NO_MATCH"
 
-    response_parameters = {
-      "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
-      "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'"
-      "method.response.header.Access-Control-Allow-Origin"  = "'*'"
-    }
-
-    response_templates = {
-      "application/json" = ""
-    }
+  request_templates = {
+    "application/json" = <<EOF
+{
+  "statusCode": 200
+}
+EOF
   }
+}
+
+resource "aws_api_gateway_integration_response" "chatbot_options_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.chatbot_api.id
+  resource_id = aws_api_gateway_resource.chatbot_resource.id
+  http_method = aws_api_gateway_method.chatbot_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  response_templates = {
+    "application/json" = ""
+  }
+}
+
 }
 
 resource "aws_api_gateway_method_response" "chatbot_options_response" {
