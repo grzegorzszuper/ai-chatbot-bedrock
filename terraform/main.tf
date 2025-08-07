@@ -50,7 +50,7 @@ resource "aws_lambda_function" "chatbot_lambda" {
   handler       = "handler.lambda_handler"
   runtime       = "python3.12"
   filename      = "lambda.zip"
-  timeout       = 10
+  timeout       = 30
   source_code_hash = filebase64sha256("lambda.zip")
 }
 
