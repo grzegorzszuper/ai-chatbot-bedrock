@@ -8,6 +8,7 @@ on:
     paths:
       - 'frontend/index.html'
       - 'frontend/script.js'
+      - 'frontend/style.css'
       - 'frontend/assets/**'  # jeśli masz katalog assets
   workflow_dispatch: {}
 
