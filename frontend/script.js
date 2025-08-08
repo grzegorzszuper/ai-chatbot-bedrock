@@ -6,44 +6,48 @@ async function sendMessage() {
   const userMsg = msgInput.value.trim();
   if (!userMsg) return;
 
-  // Dodaj wiadomość użytkownika
-  const userBubble = document.createElement('div');
-  userBubble.classList.add('message', 'user');
-  userBubble.textContent = userMsg;
-  chatBody.appendChild(userBubble);
-  chatBody.scrollTop = chatBody.scrollHeight;
+  // Usuń placeholder, jeśli to pierwsza wiadomość
   msgInput.value = '';
 
+  // Dodaj wiadomość użytkownika
+  const userDiv = document.createElement('div');
+  userDiv.classList.add('user-msg');
+  userDiv.textContent = userMsg;
+  chatBody.appendChild(userDiv);
+  chatBody.scrollTop = chatBody.scrollHeight;
+
   // Dodaj loading
-  const loading = document.createElement('div');
-  loading.classList.add('message', 'bot');
-  loading.textContent = 'Czekam na odpowiedź...';
-  chatBody.appendChild(loading);
+  const loadingDiv = document.createElement('div');
+  loadingDiv.classList.add('bot-msg');
+  loadingDiv.textContent = 'Czekam na odpowiedź...';
+  chatBody.appendChild(loadingDiv);
   chatBody.scrollTop = chatBody.scrollHeight;
 
   try {
     const res = await fetch(API_URL, {
-      method: 'POST',
-      mode: 'cors',
+      method: 'POST', mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userMsg })
     });
     const data = await res.json();
-    loading.remove();
-    const botBubble = document.createElement('div');
-    botBubble.classList.add('message', 'bot');
-    botBubble.textContent = data.response || 'Brak odpowiedzi';
-    chatBody.appendChild(botBubble);
+    loadingDiv.remove();
+    const botDiv = document.createElement('div');
+    botDiv.classList.add('bot-msg');
+    botDiv.textContent = data.response || 'Brak odpowiedzi';
+    chatBody.appendChild(botDiv);
     chatBody.scrollTop = chatBody.scrollHeight;
   } catch (err) {
-    loading.remove();
-    alert('Błąd komunikacji z serwerem');
-    console.error(err);
+    loadingDiv.remove();
+    const errDiv = document.createElement('div');
+    errDiv.classList.add('bot-msg');
+    errDiv.textContent = 'Błąd połączenia: ' + err.message;
+    chatBody.appendChild(errDiv);
+    chatBody.scrollTop = chatBody.scrollHeight;
   }
 }
 
 document.getElementById('sendBtn').addEventListener('click', sendMessage);
-document.getElementById('message').addEventListener('keyup', (e) => {
+document.getElementById('message').addEventListener('keypress', e => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     sendMessage();

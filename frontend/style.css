@@ -7,6 +7,7 @@
   --bg: #f2f5f8;
   --card: #ffffff;
   --text: #333333;
+  --muted: #777777;
   --incoming: #eef5ff;
   --outgoing: #dcf1ff;
 }
@@ -44,30 +45,32 @@ body {
 
 .chat-body {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   padding: 16px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   background: var(--bg);
+  height: 400px;
 }
 
-.message {
+/* Now support multiple messages */
+.user-msg, .bot-msg {
   max-width: 75%;
-  padding: 12px;
+  padding: 10px 14px;
   border-radius: 12px;
   line-height: 1.4;
   word-wrap: break-word;
 }
 
-.message.user {
+.user-msg {
   background: var(--outgoing);
   color: var(--text);
   align-self: flex-end;
   border-bottom-right-radius: 4px;
 }
 
-.message.bot {
+.bot-msg {
   background: var(--incoming);
   color: var(--text);
   align-self: flex-start;
@@ -99,6 +102,5 @@ body {
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s ease;
 }
 .chat-footer button:hover { background: var(--primary-dark); }
