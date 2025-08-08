@@ -1,4 +1,17 @@
 /* style.css */
+body { background: #f9f9f9; font-family: Arial, sans-serif; color: #333; display: flex; justify-content: center; padding: 40px 0; margin: 0; }
+.container { background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); max-width: 600px; width: 90%; padding: 20px; box-sizing: border-box; }
+h1 { text-align: center; margin-bottom: 20px; font-size: 1.8rem; }
+textarea#message { resize: vertical; min-height: 80px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+button { background-color: #007acc; color: #fff; border: none; border-radius: 4px; padding: 12px; font-size: 1rem; cursor: pointer; transition: background-color 0.2s ease; width: 100%; }
+button:hover { background-color: #005fa3; }
+#response { margin-top: 20px; white-space: pre-wrap; background: #eef5ff; border: 1px solid #cde4ff; border-radius: 4px; padding: 15px; min-height: 100px; }
+
+/* nowe klasy dla rozdzielenia */
+.user-msg { font-weight: bold; margin-bottom: 8px; }
+.bot-msg { margin-bottom: 16px; }
+```css
+/* style.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
 :root {
