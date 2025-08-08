@@ -21,12 +21,17 @@ async function sendMessage() {
   addMessage("Czekam na odpowiedź...", false);
   
   try {
+    console.log("Sending to:", API_URL);
+    console.log("Message:", message);
+    
     const res = await fetch(API_URL, {
       method: "POST",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message })
     });
+    
+    console.log("Response status:", res.status);
 
     const data = await res.json();
     
@@ -41,6 +46,7 @@ async function sendMessage() {
     }
 
   } catch (err) {
+    console.error("Fetch error:", err);
     const chatBody = document.getElementById("chatBody");
     chatBody.removeChild(chatBody.lastChild);
     addMessage("Błąd połączenia: " + err.message, false);
