@@ -1,54 +1,57 @@
-const API_URL = "https://r7l91vquc8.execute-api.eu-west-3.amazonaws.com/prod/chat";
+const API_URL = "https://s9ggkndj08.execute-api.eu-west-3.amazonaws.com/prod/chat";
+
+function addMessage(content, isUser = false) {
+  const chatBody = document.getElementById("chatBody");
+  const messageDiv = document.createElement("div");
+  messageDiv.className = isUser ? "user-message" : "bot-message";
+  messageDiv.textContent = content;
+  chatBody.appendChild(messageDiv);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
 
 async function sendMessage() {
-  const msgInput = document.getElementById('message');
-  const chatBody = document.getElementById('chatBody');
-  const userMsg = msgInput.value.trim();
-  if (!userMsg) return;
-
-  // Usuń placeholder, jeśli to pierwsza wiadomość
-  msgInput.value = '';
-
-  // Dodaj wiadomość użytkownika
-  const userDiv = document.createElement('div');
-  userDiv.classList.add('user-msg');
-  userDiv.textContent = userMsg;
-  chatBody.appendChild(userDiv);
-  chatBody.scrollTop = chatBody.scrollHeight;
-
-  // Dodaj loading
-  const loadingDiv = document.createElement('div');
-  loadingDiv.classList.add('bot-msg');
-  loadingDiv.textContent = 'Czekam na odpowiedź...';
-  chatBody.appendChild(loadingDiv);
-  chatBody.scrollTop = chatBody.scrollHeight;
-
+  const messageInput = document.getElementById("message");
+  const message = messageInput.value.trim();
+  
+  if (!message) return;
+  
+  addMessage(message, true);
+  messageInput.value = "";
+  
+  addMessage("Czekam na odpowiedź...", false);
+  
   try {
     const res = await fetch(API_URL, {
-      method: 'POST', mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMsg })
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
     });
+
     const data = await res.json();
-    loadingDiv.remove();
-    const botDiv = document.createElement('div');
-    botDiv.classList.add('bot-msg');
-    botDiv.textContent = data.response || 'Brak odpowiedzi';
-    chatBody.appendChild(botDiv);
-    chatBody.scrollTop = chatBody.scrollHeight;
+    
+    // Usuń "Czekam na odpowiedź..."
+    const chatBody = document.getElementById("chatBody");
+    chatBody.removeChild(chatBody.lastChild);
+    
+    if (data.response) {
+      addMessage(data.response, false);
+    } else {
+      addMessage("Błąd: " + JSON.stringify(data), false);
+    }
+
   } catch (err) {
-    loadingDiv.remove();
-    const errDiv = document.createElement('div');
-    errDiv.classList.add('bot-msg');
-    errDiv.textContent = 'Błąd połączenia: ' + err.message;
-    chatBody.appendChild(errDiv);
-    chatBody.scrollTop = chatBody.scrollHeight;
+    const chatBody = document.getElementById("chatBody");
+    chatBody.removeChild(chatBody.lastChild);
+    addMessage("Błąd połączenia: " + err.message, false);
   }
 }
 
-document.getElementById('sendBtn').addEventListener('click', sendMessage);
-document.getElementById('message').addEventListener('keypress', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
+// Event listeners
+document.getElementById("sendBtn").addEventListener("click", sendMessage);
+
+document.getElementById("message").addEventListener("keypress", function(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     sendMessage();
   }
