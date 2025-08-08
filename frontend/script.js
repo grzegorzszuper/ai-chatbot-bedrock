@@ -1,4 +1,4 @@
-const API_URL = "https://r7l91vquc8.execute-api.eu-west-3.amazonaws.com/prod/chat";
+const API_URL = "https://s9ggkndj08.execute-api.eu-west-3.amazonaws.com/prod/chat";
 
 function addMessage(content, isUser = false) {
   const chatBody = document.getElementById("chatBody");
