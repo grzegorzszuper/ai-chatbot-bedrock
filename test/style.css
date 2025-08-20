@@ -9,7 +9,7 @@
   --card: #ffffff;      /* biała karta -> lepszy kontrast */
   --text: #1f2937;      /* ciemny grafitowy tekst */
   --muted: #6b7280;
-  --incoming: #dde8fa;  /* bąbelek bota: bardzo jasny */
+  --incoming: #c9d5e8;  /* bąbelek bota: bardzo jasny */
   --outgoing: #cde1fb;  /* bąbelek usera: jasny niebieski */
   --border: #e5e7eb;    /* subtelny kontur */
 }
