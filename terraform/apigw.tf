@@ -1,55 +1,3 @@
-provider "aws" {
-  region = "eu-west-3"
-}
-
-#################### IAM Role ####################
-resource "aws_iam_role" "lambda_exec" {
-  name = "lambda_exec_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "lambda.amazonaws.com"
-      }
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_logs" {
-  role       = aws_iam_role.lambda_exec.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_iam_role_policy" "lambda_bedrock" {
-  name = "lambda_bedrock_policy"
-  role = aws_iam_role.lambda_exec.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "bedrock:InvokeModel"
-      ]
-      Resource = "*"
-    }]
-  })
-}
-
-#################### Lambda ####################
-resource "aws_lambda_function" "chatbot_lambda" {
-  filename         = "lambda.zip"
-  function_name    = "chatbotHandler"
-  role             = aws_iam_role.lambda_exec.arn
-  handler          = "handler.lambda_handler"
-  runtime          = "python3.12"
-  source_code_hash = filebase64sha256("lambda.zip")
-  timeout          = 30
-  memory_size      = 256
-}
-
-#################### API Gateway ####################
 resource "aws_api_gateway_rest_api" "chatbot_api" {
   name = "chatbot-api"
 }
@@ -120,15 +68,6 @@ resource "aws_api_gateway_integration_response" "chatbot_options_integration_res
   depends_on = [aws_api_gateway_method_response.chatbot_options_response]
 }
 
-#################### Lambda Permission ####################
-resource "aws_lambda_permission" "apigw_lambda" {
-  statement_id  = "AllowAPIGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.chatbot_lambda.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.chatbot_api.execution_arn}/*/*"
-}
-
 #################### API Gateway CloudWatch Role ####################
 resource "aws_iam_role" "api_gateway_cloudwatch" {
   name = "api_gateway_cloudwatch_role"
@@ -142,15 +81,6 @@ resource "aws_iam_role" "api_gateway_cloudwatch" {
       }
     }]
   })
-}
-
-resource "aws_iam_role_policy_attachment" "api_gateway_cloudwatch" {
-  role       = aws_iam_role.api_gateway_cloudwatch.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
-}
-
-resource "aws_api_gateway_account" "main" {
-  cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch.arn
 }
 
 #################### CloudWatch Log Group ####################
@@ -222,8 +152,6 @@ resource "aws_api_gateway_method_settings" "chatbot_settings" {
   }
 }
 
-#################### Output ####################
-output "api_url" {
-  description = "API Gateway endpoint URL"
-  value       = "https://${aws_api_gateway_rest_api.chatbot_api.id}.execute-api.eu-west-3.amazonaws.com/${aws_api_gateway_stage.chatbot_stage.stage_name}/chat"
+resource "aws_api_gateway_account" "main" {
+  cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch.arn
 }
